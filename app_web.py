@@ -92,7 +92,7 @@ with st.sidebar:
     st.divider()
     st.subheader("⚙️ Parámetros de Recuperación")
     top_k = st.slider("Documentos a recuperar (Top-K):", min_value=1, max_value=8, value=3)
-    temperature = st.slider("Temperatura (Creatividad):", min_value=0.0, max_value=1.0, value=0.1, step=0.05)
+    temperature = st.slider("Temperatura (Creatividad):", min_value=0.0, max_value=1.0, value=0.3, step=0.05)
 
     st.divider()
     st.subheader("💡 Preguntas de Evaluación")
@@ -210,16 +210,16 @@ if user_query:
 
                     if chunk:
                         retrieved_chunks.append({"title": title, "chunk": chunk[:1500], "score": score})
-                        context_texts.append(f"[DOCUMENTO: {title}]\n{chunk}\n[FIN DOCUMENTO]")
+                        context_texts.append(f"Fuente: {title}\nTexto: {chunk.strip()}")
 
-                context_str = "\n\n".join(context_texts)
+                context_str = "\n\n---\n\n".join(context_texts)
 
             # Paso C: Generación de respuesta con LLM (cargado desde system_prompt.txt)
             system_prompt = load_system_prompt()
 
             messages_for_llm = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Contexto extraído de las guías oficiales:\n{context_str}\n\nPregunta del usuario: {user_query}"}
+                {"role": "user", "content": f"Información de contexto disponible:\n{context_str}\n\nPregunta del usuario: {user_query}"}
             ]
 
             llm_kwargs = {

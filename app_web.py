@@ -232,13 +232,12 @@ if user_query:
 
             stream = openai_client.chat.completions.create(**llm_kwargs)
 
-            response_placeholder = st.empty()
-            full_response = ""
-            for chunk in stream:
-                if chunk.choices and chunk.choices[0].delta.content:
-                    full_response += chunk.choices[0].delta.content
-                    response_placeholder.markdown(full_response + "▌")
-            response_placeholder.markdown(full_response)
+            def response_generator():
+                for chunk in stream:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        yield chunk.choices[0].delta.content
+
+            full_response = st.write_stream(response_generator())
 
             # Desplegable con fuentes y fragmentos recuperados
             if retrieved_chunks:

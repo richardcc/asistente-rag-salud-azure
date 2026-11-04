@@ -73,7 +73,7 @@ from openai import AzureOpenAI
 # ======================================================================
 # PARÁMETROS GENERALES DE ARQUITECTURA (Azure for Students)
 # ======================================================================
-SUBSCRIPTION_ID = os.getenv("AZURE_SUBSCRIPTION_ID", "92074ef6-eabb-45a8-b72b-baa10480129e")
+SUBSCRIPTION_ID = os.getenv("AZURE_SUBSCRIPTION_ID", "")
 DEFAULT_RG = os.getenv("AZURE_RESOURCE_GROUP", "rg-rag-unir-final")
 LOCATION_CORE = "germanywestcentral"  # Región autorizada para Cognitive Services y Storage
 LOCATION_SEARCH = "belgiumcentral"    # Región autorizada para AI Search (Tier Básico)
@@ -108,10 +108,19 @@ def extract_storage_key(st_keys):
 
 
 def main():
+    global SUBSCRIPTION_ID
     print("=" * 80)
     print("  🚀 DESPLIEGUE INTEGRAL 100% AUTOMATIZADO - ARQUITECTURA RAG EN AZURE")
     print("  Máster Universitario en Inteligencia Artificial - UNIR")
     print("=" * 80)
+
+    if not SUBSCRIPTION_ID:
+        print("\n[i] No se ha detectado la variable de entorno 'AZURE_SUBSCRIPTION_ID'.")
+        print("    Puedes consultar tu ID de suscripcion en: https://portal.azure.com/#view/Microsoft_Azure_Billing/SubscriptionsBlade")
+        SUBSCRIPTION_ID = input("    Introduce tu Subscription ID de Azure: ").strip()
+        if not SUBSCRIPTION_ID:
+            print("[!] No se ha proporcionado un Subscription ID valido. Abortando despliegue.")
+            return
 
     # ------------------------------------------------------------------
     # PASO 1: Autenticación

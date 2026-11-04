@@ -229,6 +229,8 @@ if user_query:
             }
             if not config["AZURE_OPENAI_CHAT_DEPLOYMENT"].startswith("o"):
                 llm_kwargs["temperature"] = temperature
+                llm_kwargs["max_tokens"] = 600
+                llm_kwargs["frequency_penalty"] = 0.3
 
             stream = openai_client.chat.completions.create(**llm_kwargs)
 

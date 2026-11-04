@@ -164,23 +164,7 @@ if user_query:
     with st.chat_message("user"):
         st.markdown(user_query)
 
-    # 2. Guardrail de entrada (filtro de dominio para consultas no medicas/matematicas)
-    if re.match(r"^[\d\+\-\*\/\^\(\)\=\.\,\s]+$", user_query.strip()):
-        with st.chat_message("assistant"):
-            msg_guardrail = (
-                "Soy un asistente especializado exclusivamente en **salud, nutrición y hábitos saludables**.\n\n"
-                "No estoy diseñado para resolver operaciones matemáticas generales ni consultas ajenas a este ámbito.\n\n"
-                "¿En qué puedo ayudarte respecto a tu alimentación, ejercicio físico o control de peso?"
-            )
-            st.markdown(msg_guardrail)
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": msg_guardrail,
-                "citations": []
-            })
-        st.stop()
-
-    # 3. Pipeline RAG
+    # 2. Pipeline RAG
     with st.chat_message("assistant"):
         try:
             # Paso A y B: Búsqueda Vectorial (spinner solo durante la búsqueda rápida)
@@ -258,18 +242,8 @@ if user_query:
 
             full_response = st.write_stream(response_generator())
 
-            # Desplegable con fuentes y fragmentos recuperados (solo si aplica al dominio)
-            es_fuera_de_dominio = any(
-                frase in full_response.lower()
-                for frase in [
-                    "fuera de este ámbito", "fuera de este ambito",
-                    "fuera de mi ámbito", "fuera de mi ambito",
-                    "especializado exclusivamente", "no estoy capacitado para",
-                    "no estoy diseñado para", "mi especialidad es"
-                ]
-            )
-
-            if retrieved_chunks and not es_fuera_de_dominio:
+            # Desplegable con fuentes y fragmentos recuperados
+            if retrieved_chunks:
                 with st.expander(f"📚 Ver {len(retrieved_chunks)} citas y evidencias documentales"):
                     for idx, c in enumerate(retrieved_chunks, 1):
                         st.markdown(
@@ -280,7 +254,7 @@ if user_query:
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": full_response,
-                "citations": retrieved_chunks if not es_fuera_de_dominio else []
+                "citations": retrieved_chunks
             })
 
         except Exception as e:

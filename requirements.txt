@@ -1,0 +1,10 @@
+# Dependencias principales para Despliegue y Web App RAG en Azure
+streamlit>=1.35.0
+openai>=1.30.0
+azure-identity>=1.16.0
+azure-storage-blob>=12.19.0
+azure-search-documents>=11.4.0
+azure-mgmt-resource>=23.0.0
+azure-mgmt-storage>=21.1.0
+azure-mgmt-cognitiveservices>=13.5.0
+azure-mgmt-search>=9.0.0

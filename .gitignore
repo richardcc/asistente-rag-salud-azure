@@ -1,0 +1,20 @@
+# Archivo de configuracion con claves y credenciales privadas de Azure
+config_rag.json
+
+# Entornos virtuales de Python
+venv/
+env/
+.env
+
+# Archivos compilados y cache de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Configuraciones de editores e IDEs
+.vscode/
+.idea/
+
+# Archivos del sistema
+Thumbs.db
+.DS_Store

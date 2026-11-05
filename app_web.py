@@ -223,15 +223,24 @@ if user_query:
                 {"role": "user", "content": f"Información de contexto disponible:\n{context_str}\n\nPregunta del usuario: {user_query}"}
             ]
 
+            # Configuración de parámetros adaptativa según generación del modelo
+            model_name = config.get("AZURE_OPENAI_CHAT_DEPLOYMENT", "").lower()
+            es_modelo_nuevo = any(p in model_name for p in ["gpt-5", "o1", "o3", "o4"])
+
             llm_kwargs = {
                 "model": config["AZURE_OPENAI_CHAT_DEPLOYMENT"],
                 "messages": messages_for_llm,
                 "stream": True
             }
-            if not config["AZURE_OPENAI_CHAT_DEPLOYMENT"].startswith("o"):
+
+            if es_modelo_nuevo:
+                # Modelos con razonamiento avanzado (GPT-5, o-series): usan max_completion_tokens
+                llm_kwargs["max_completion_tokens"] = 1500
+            else:
+                # Modelos clásicos (GPT-4o, Phi, GPT-3.5)
                 llm_kwargs["temperature"] = temperature
-                llm_kwargs["max_tokens"] = 600
-                llm_kwargs["frequency_penalty"] = 0.3
+                llm_kwargs["max_tokens"] = 800
+                llm_kwargs["frequency_penalty"] = 0.2
 
             stream = openai_client.chat.completions.create(**llm_kwargs)
 

@@ -613,14 +613,20 @@ def main():
                 sys_prompt = pf.read().strip()
         else:
             sys_prompt = "Eres un asistente clínico. Responde citando el documento basándote exclusivamente en el contexto."
-        completion = test_client_ai.chat.completions.create(
-            model=chat_model_final,
-            messages=[
+        es_mod_nuevo = any(p in chat_model_final.lower() for p in ["gpt-5", "o1", "o3", "o4"])
+        kwargs_test = {
+            "model": chat_model_final,
+            "messages": [
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": f"Contexto:\n{chr(10).join(context_snippets)}\n\nPregunta: {test_query}"}
-            ],
-            max_tokens=150
-        )
+            ]
+        }
+        if es_mod_nuevo:
+            kwargs_test["max_completion_tokens"] = 800
+        else:
+            kwargs_test["max_tokens"] = 300
+
+        completion = test_client_ai.chat.completions.create(**kwargs_test)
         answer = completion.choices[0].message.content.strip()
         print(f"\n      [✓] Respuesta generada por '{chat_model_final}':")
         print(f"         \"{answer}\"")

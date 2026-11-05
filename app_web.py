@@ -234,8 +234,11 @@ if user_query:
             }
 
             if es_modelo_nuevo:
-                # Modelos con razonamiento avanzado (GPT-5, o-series): usan max_completion_tokens
-                llm_kwargs["max_completion_tokens"] = 1500
+                # Modelos con razonamiento avanzado (GPT-5, o-series):
+                # max_completion_tokens engloba los reasoning_tokens internos y los de salida.
+                # Configuramos 4000 tokens y reasoning_effort='low' para streaming rapido y completo.
+                llm_kwargs["max_completion_tokens"] = 4000
+                llm_kwargs["reasoning_effort"] = "low"
             else:
                 # Modelos clásicos (GPT-4o, Phi, GPT-3.5)
                 llm_kwargs["temperature"] = temperature
@@ -245,9 +248,13 @@ if user_query:
             stream = openai_client.chat.completions.create(**llm_kwargs)
 
             def response_generator():
+                has_content = False
                 for chunk in stream:
                     if chunk.choices and chunk.choices[0].delta.content:
+                        has_content = True
                         yield chunk.choices[0].delta.content
+                if not has_content:
+                    yield "*(No se generó contenido de respuesta. Por favor, realiza de nuevo la consulta)*"
 
             full_response = st.write_stream(response_generator())
 

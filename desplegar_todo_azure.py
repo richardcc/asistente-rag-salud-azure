@@ -622,7 +622,8 @@ def main():
             ]
         }
         if es_mod_nuevo:
-            kwargs_test["max_completion_tokens"] = 800
+            kwargs_test["max_completion_tokens"] = 4000
+            kwargs_test["reasoning_effort"] = "low"
         else:
             kwargs_test["max_tokens"] = 300
 

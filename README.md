@@ -22,6 +22,7 @@ El proyecto se opera y ejecuta mediante dos componentes principales:
 .
 |-- desplegar_todo_azure.py    # Script integral de despliegue automatico en Azure
 |-- app_web.py                 # Interfaz Web interactiva (Streamlit) del Asistente RAG
+|-- probar_gpt.py              # Script de prueba e integracion de modelos GPT por consola
 |-- system_prompt.txt          # Directivas y reglas de comportamiento del Asistente (Prompt externo)
 |-- requirements.txt           # Dependencias de Python necesarias
 |-- config_rag.json.example    # Plantilla de configuracion (sin claves) para despliegues

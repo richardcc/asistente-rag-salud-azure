@@ -1,6 +1,10 @@
 # Archivo de configuracion con claves y credenciales privadas de Azure
 config_rag.json
 
+# Scripts locales de entorno con credenciales privadas
+*.bat
+*.cmd
+
 # Entornos virtuales de Python
 venv/
 env/

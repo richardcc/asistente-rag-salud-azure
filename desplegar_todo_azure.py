@@ -275,25 +275,27 @@ def main():
         embedding_model_final = existing_deployments[PREFERRED_EMBEDDING_MODEL.lower()]
         print(f"      [✓] Modelo de embedding disponible: '{embedding_model_final}'.")
 
-    # 4B: Modelo de Chat Generativo (Phi-4-mini-instruct)
+    # 4B: Modelo de Chat Generativo (priorizar modelo preferido GPT)
     chat_deployed = False
-    for k, v in existing_deployments.items():
-        if "embedding" not in k and any(term in k for term in ["phi", "instruct", "gpt", "chat"]):
-            chat_model_final = v
-            chat_deployed = True
-            break
 
-    if not chat_deployed:
+    # 1. Comprobar si ya existe el modelo preferido
+    if PREFERRED_CHAT_MODEL.lower() in existing_deployments:
+        chat_model_final = existing_deployments[PREFERRED_CHAT_MODEL.lower()]
+        chat_deployed = True
+        print(f"      [✓] Modelo de chat preferido '{PREFERRED_CHAT_MODEL}' ya activo.")
+    else:
+        # 2. Desplegar automaticamente el modelo preferido o alternativa GPT
         print(f"      [+] Desplegando automáticamente modelo de chat '{PREFERRED_CHAT_MODEL}'...")
         deploy_candidates = [
             {"format": "OpenAI", "name": PREFERRED_CHAT_MODEL, "version": "2025-08-07", "capacity": 10},
             {"format": "OpenAI", "name": PREFERRED_CHAT_MODEL, "version": "default", "capacity": 10},
             {"format": "OpenAI", "name": "gpt-4o-mini", "version": "2024-07-18", "capacity": 10},
+            {"format": "OpenAI", "name": "gpt-4o", "version": "2024-08-06", "capacity": 10},
             {"format": "Microsoft", "name": "Phi-4-mini-instruct", "version": "1", "capacity": 10},
         ]
         for candidate in deploy_candidates:
             try:
-                print(f"         -> Probando despliegue de '{candidate['name']}' (SKU GlobalStandard {candidate['capacity']}k)...")
+                print(f"         -> Intentando desplegar '{candidate['name']}' en Azure...")
                 cog_client.deployments.begin_create_or_update(
                     target_rg_cog,
                     cog_name,
@@ -311,12 +313,19 @@ def main():
                 ).result()
                 chat_model_final = candidate["name"]
                 chat_deployed = True
-                print(f"      [✓] Modelo de chat '{chat_model_final}' desplegado exitosamente.")
+                print(f"      [✓] Modelo de chat '{chat_model_final}' desplegado exitosamente en Azure.")
                 break
             except Exception as e_dep:
-                print(f"         [!] Intento no disponible: {e_dep}")
-    else:
-        print(f"      [✓] Modelo de chat disponible: '{chat_model_final}'.")
+                print(f"         [!] Intento no disponible para '{candidate['name']}': {e_dep}")
+
+        # 3. Fallback: Si no se pudo desplegar nuevo, usar alguno ya existente
+        if not chat_deployed:
+            for k, v in existing_deployments.items():
+                if "embedding" not in k and any(term in k for term in ["gpt", "phi", "instruct", "chat"]):
+                    chat_model_final = v
+                    chat_deployed = True
+                    print(f"      [✓] Usando modelo existente en Azure: '{chat_model_final}'.")
+                    break
 
     print(f"      [✓] Modelo Chat operativo: '{chat_model_final}'")
     print(f"      [✓] Modelo Embedding operativo: '{embedding_model_final}'")

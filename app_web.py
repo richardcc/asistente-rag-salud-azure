@@ -92,7 +92,7 @@ with st.sidebar:
 
     st.divider()
     st.subheader("⚙️ Parámetros de Recuperación")
-    top_k = st.slider("Documentos a recuperar (Top-K):", min_value=1, max_value=8, value=3)
+    top_k = st.slider("Documentos a recuperar (Top-K):", min_value=1, max_value=8, value=2)
     temperature = st.slider("Temperatura (Creatividad):", min_value=0.0, max_value=1.0, value=0.3, step=0.05)
 
     st.divider()
@@ -167,8 +167,9 @@ if user_query:
     # 2. Pipeline RAG
     with st.chat_message("assistant"):
         try:
-            # Paso A y B: Búsqueda Vectorial (spinner solo durante la búsqueda rápida)
-            with st.spinner("🔍 Consultando evidencias en Azure AI Search..."):
+            # Indicador de estado visual en tiempo real
+            with st.status("🔍 Consultando evidencias en guías oficiales...", expanded=True) as status:
+                status.write("• Vectorizando pregunta y buscando en Azure AI Search...")
                 emb_res = openai_client.embeddings.create(
                     input=user_query,
                     model=config["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"]
@@ -210,42 +211,41 @@ if user_query:
                         title = title.split("\\")[-1]
 
                     if chunk:
-                        retrieved_chunks.append({"title": title, "chunk": chunk[:1500], "score": score})
-                        context_texts.append(f"Fuente: {title}\nTexto: {chunk.strip()}")
+                        retrieved_chunks.append({"title": title, "chunk": chunk[:1000], "score": score})
+                        context_texts.append(f"Fuente: {title}\nTexto: {chunk[:1000].strip()}")
 
                 context_str = "\n\n---\n\n".join(context_texts)
+                status.write(f"• {len(retrieved_chunks)} evidencias oficiales recuperadas (SEEDO, AESAN, AEMPS, Sanidad).")
+                status.write("• Razonando y redactando síntesis clínica con `gpt-5-mini`...")
 
-            # Paso C: Generación de respuesta con LLM (cargado desde system_prompt.txt)
-            system_prompt = load_system_prompt()
+                # Paso C: Generación de respuesta con LLM (cargado desde system_prompt.txt)
+                system_prompt = load_system_prompt()
 
-            messages_for_llm = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Información de contexto disponible:\n{context_str}\n\nPregunta del usuario: {user_query}"}
-            ]
+                messages_for_llm = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Información de contexto disponible:\n{context_str}\n\nPregunta del usuario: {user_query}"}
+                ]
 
-            # Configuración de parámetros adaptativa según generación del modelo
-            model_name = config.get("AZURE_OPENAI_CHAT_DEPLOYMENT", "").lower()
-            es_modelo_nuevo = any(p in model_name for p in ["gpt-5", "o1", "o3", "o4"])
+                # Configuración adaptativa del modelo
+                model_name = config.get("AZURE_OPENAI_CHAT_DEPLOYMENT", "").lower()
+                es_modelo_nuevo = any(p in model_name for p in ["gpt-5", "o1", "o3", "o4"])
 
-            llm_kwargs = {
-                "model": config["AZURE_OPENAI_CHAT_DEPLOYMENT"],
-                "messages": messages_for_llm,
-                "stream": True
-            }
+                llm_kwargs = {
+                    "model": config["AZURE_OPENAI_CHAT_DEPLOYMENT"],
+                    "messages": messages_for_llm,
+                    "stream": True
+                }
 
-            if es_modelo_nuevo:
-                # Modelos con razonamiento avanzado (GPT-5, o-series):
-                # max_completion_tokens engloba los reasoning_tokens internos y los de salida.
-                # Configuramos 4000 tokens y reasoning_effort='low' para streaming rapido y completo.
-                llm_kwargs["max_completion_tokens"] = 4000
-                llm_kwargs["reasoning_effort"] = "low"
-            else:
-                # Modelos clásicos (GPT-4o, Phi, GPT-3.5)
-                llm_kwargs["temperature"] = temperature
-                llm_kwargs["max_tokens"] = 800
-                llm_kwargs["frequency_penalty"] = 0.2
+                if es_modelo_nuevo:
+                    llm_kwargs["max_completion_tokens"] = 4000
+                    llm_kwargs["reasoning_effort"] = "low"
+                else:
+                    llm_kwargs["temperature"] = temperature
+                    llm_kwargs["max_tokens"] = 800
+                    llm_kwargs["frequency_penalty"] = 0.2
 
-            stream = openai_client.chat.completions.create(**llm_kwargs)
+                stream = openai_client.chat.completions.create(**llm_kwargs)
+                status.update(label="✅ Evidencias procesadas y contrastadas", state="complete", expanded=False)
 
             def response_generator():
                 has_content = False

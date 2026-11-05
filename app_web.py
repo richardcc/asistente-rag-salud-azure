@@ -81,7 +81,7 @@ with st.sidebar:
 
     if config:
         st.success("🟢 Conexión con Azure activa")
-        st.markdown(f"**Modelo Chat:** `{config.get('AZURE_OPENAI_CHAT_DEPLOYMENT', 'gpt-4.1-mini')}`")
+        st.markdown(f"**Modelo Chat:** `{config.get('AZURE_OPENAI_CHAT_DEPLOYMENT', 'gpt-5-mini')}`")
         st.markdown(f"**Embeddings:** `{config.get('AZURE_OPENAI_EMBEDDING_DEPLOYMENT', 'text-embedding-3-small')}`")
         st.markdown(f"**Motor Vectorial:** Azure AI Search")
         st.markdown(f"**Índice:** `{config.get('AZURE_SEARCH_INDEX', 'rag-salud-indices')}`")

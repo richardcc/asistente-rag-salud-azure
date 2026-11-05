@@ -11,7 +11,7 @@ Este script automatiza de extremo a extremo y sin intervención manual todos los
   3. Azure Blob Storage + Carga automática de los 5 PDFs oficiales de Salud y Nutrición.
   4. Azure Cognitive Services / AI Foundry:
      - Despliegue automático de 'text-embedding-3-small' (Embeddings).
-     - Despliegue automático de 'Phi-4-mini-instruct' (Chat Generativo).
+     - Despliegue automático de 'gpt-5-mini' (Chat Generativo).
   5. Azure AI Search (Base de datos vectorial en la nube con HNSW).
   6. Pipeline NATIVO de Ingestión en Azure (Zero chunking manual en Python):
      - Conexión de Datos (Data Source) al Blob Storage.
@@ -82,7 +82,7 @@ DEFAULT_STORAGE_NAME = "stosaludunir26"
 CONTAINER_NAME = "documentos-salud"
 
 DEFAULT_OPENAI_NAME = "openai-salud-0d1ff3"
-PREFERRED_CHAT_MODEL = "Phi-4-mini-instruct"
+PREFERRED_CHAT_MODEL = "gpt-5-mini"
 PREFERRED_EMBEDDING_MODEL = "text-embedding-3-small"
 
 DEFAULT_SEARCH_NAME = "search-salud-78bd24"
@@ -286,9 +286,10 @@ def main():
     if not chat_deployed:
         print(f"      [+] Desplegando automáticamente modelo de chat '{PREFERRED_CHAT_MODEL}'...")
         deploy_candidates = [
-            {"format": "Microsoft", "name": PREFERRED_CHAT_MODEL, "version": "1", "capacity": 10},
-            {"format": "Microsoft", "name": PREFERRED_CHAT_MODEL, "version": "1", "capacity": 1},
+            {"format": "OpenAI", "name": PREFERRED_CHAT_MODEL, "version": "2025-08-07", "capacity": 10},
+            {"format": "OpenAI", "name": PREFERRED_CHAT_MODEL, "version": "default", "capacity": 10},
             {"format": "OpenAI", "name": "gpt-4o-mini", "version": "2024-07-18", "capacity": 10},
+            {"format": "Microsoft", "name": "Phi-4-mini-instruct", "version": "1", "capacity": 10},
         ]
         for candidate in deploy_candidates:
             try:

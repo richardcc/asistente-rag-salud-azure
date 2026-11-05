@@ -22,7 +22,6 @@ El proyecto se opera y ejecuta mediante dos componentes principales:
 .
 |-- desplegar_todo_azure.py    # Script integral de despliegue automatico en Azure
 |-- app_web.py                 # Interfaz Web interactiva (Streamlit) del Asistente RAG
-|-- probar_gpt.py              # Script de prueba e integracion de modelos GPT por consola
 |-- system_prompt.txt          # Directivas y reglas de comportamiento del Asistente (Prompt externo)
 |-- requirements.txt           # Dependencias de Python necesarias
 |-- config_rag.json.example    # Plantilla de configuracion (sin claves) para despliegues
@@ -114,7 +113,7 @@ python desplegar_todo_azure.py
 1. **Autenticacion:** Abre el navegador mediante `InteractiveBrowserCredential` para iniciar sesion con tu cuenta de Azure.
 2. **Grupo de Recursos:** Crea o verifica el grupo de recursos unificado (`rg-rag-unir-final`).
 3. **Blob Storage y Carga de PDFs:** Crea la cuenta de almacenamiento en Azure y sube dinamicamente todos los archivos `.pdf` de la carpeta `documentos_salud/`.
-4. **Cognitive Services / AI Foundry:** Despliega el modelo de embeddings (`text-embedding-3-small`) y el modelo generativo (`Phi-4-mini-instruct` o `gpt-4o-mini`).
+4. **Cognitive Services / AI Foundry:** Despliega el modelo de embeddings (`text-embedding-3-small`) y el modelo generativo (`gpt-5-mini` o `gpt-4o-mini`).
 5. **Azure AI Search:** Aprovisiona el servicio de busqueda vectorial en la nube (con algoritmo HNSW).
 6. **Pipeline Nativo de Ingestion RAG:**
    * Crea el Data Source apuntando al Blob Storage.
